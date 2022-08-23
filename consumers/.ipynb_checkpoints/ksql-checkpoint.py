@@ -58,7 +58,10 @@ def execute_statement():
     )
 
     # Ensure that a 2XX status code was returned
-    resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except :
+        logger.info(f"Failed to create a turnstile_summary: {json.dumps(resp.json(), indent=2)}")
 
 
 if __name__ == "__main__":

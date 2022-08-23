@@ -2,7 +2,6 @@
 import logging
 import faust
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,6 +20,7 @@ class Station(faust.Record):
 
 
 # Faust will produce records to Kafka in this format
+
 class TransformedStation(faust.Record):
     station_id: int
     station_name: str
@@ -48,12 +48,13 @@ topic=app.topic("org.chicago.cta.stations", value_type=Station)
 
 out_topic = app.topic("org.chicago.cta.stations.table.v1",
                       partitions=1, 
-                      key_type=str,
-                      value_type=TransformedStation)
+                      #value_type=TransformedStation,
+                     )
 
 table = app.Table(
     "org.chicago.cta.stations.table.v1",
     default=TransformedStation,
+    #default=int,
     partitions=1,
     changelog_topic=out_topic,
 )
@@ -74,23 +75,23 @@ async def transform_station(stations):
     async for station in stations:
        
         transformed_line = ""
-        if(station.red):
+        if(station.red is True):
             transformed_line = "red"
     
-        elif(station.blue):
+        elif(station.blue is True):
             transformed_line = "blue"
     
         else:
-            #transformed_line = "null"
             transformed_line = "green"
         
         transformed_station = TransformedStation(
-                                                station_id=station.station_id,
-                                                station_name=station.station_name,
-                                                order=station.order,
-                                                line=transformed_line
+            station_id=station.station_id,
+            station_name=station.station_name,
+            order=station.order,
+            line=transformed_line
                                                 )
-        await out_topic.send(key=station.station_name,value=transformed_station)
+        table[station.station_id] = (transformed_station)
+        logger.info(f"FAUST {station.station_name}-{transformed_station}")
     
     
     

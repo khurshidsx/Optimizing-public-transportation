@@ -16,17 +16,17 @@ class Weather:
     def process_message(self, message):
         """Handles incoming weather data"""
         logger.info("weather process_message is started")
-        print("topic", message.topic())
+        logger.info(f"weather.py, {message.topic()}")
         #
         #
         # TODO: Process incoming weather messages. Set the temperature and status.
         #
         #
         try:
-            value = json.loads(message.value())
-            print(f"Temperature is {value['temperature']}")
-            self.temperature = value["temperature"]
-            self.status = value["status"]
+            value = message.value()
+            self.temperature = value.get("temperature")
+            self.status = value.get("status")
+            logger.info(f"Temperature is {self.temperature}")
         except Exception as e:
-            logger.info("an error message is received")
+            logger.info(f"an error message is received:/n{e}")
         

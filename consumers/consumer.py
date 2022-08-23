@@ -36,29 +36,32 @@ class KafkaConsumer:
         # and use the Host URL for Kafka and Schema Registry!
         #
         ## TODO
+        #self.broker_properties = {
+        #    'BROKER_URL':'PLAINTEXT://localhost:9092',
+        #    'schema.registry.url': 'http://localhost:8081'
+     
+        #}
         BROKER_URL='PLAINTEXT://localhost:9092'
         self.broker_properties = {
-            'BROKER_URL':'PLAINTEXT://localhost:9092',
-            'schema.registry.url': 'http://localhost:8081'
-     
+            'bootstrap.servers': BROKER_URL,
+            'group.id':self.topic_name_pattern,
+            "auto.offset.reset": "earliest" if offset_earliest else "latest"
         }
+        
        
+    
+    
+    
+    
         # TODO: Create the Consumer, using the appropriate type.
         if is_avro is True:
-            print ('using Avro');
-            self.broker_properties['schema.registry.url'] = "http://localhost:8081"
             self.consumer = AvroConsumer({ 
                 'bootstrap.servers':BROKER_URL,
-                'group.id':self.topic_name_pattern,
+                'group.id':f"{self.topic_name_pattern}",
                 'schema.registry.url': 'http://localhost:8081',
-                'auto.offset.reset':'earliest'})
-        else:
-            print ('not Avro ');            
-            self.consumer = Consumer({ 
-                'bootstrap.servers':BROKER_URL,
-                'group.id':self.topic_name_pattern,
-                'auto.offset.reset':'earliest',
             })
+        else:
+            self.consumer = Consumer(self.broker_properties)
             #pass
 
         # TODO: Configure the AvroConsumer and subscribe to the topics. Make sure to think about
@@ -76,9 +79,11 @@ class KafkaConsumer:
         #logger.info("on_assign is incomplete - skipping")
         
         for partition in partitions:
-            if self.offset_earliest == True:
-                partition.offset = confluent_kafka.OFFSET_BEGINNING
-            logger.info("beginning offset  is assigned ")
+            try:
+                if self.offset_earliest==True:
+                    partition.offset = confluent_kafka.OFFSET_BEGINNING
+            except:
+                logger.info("Error while setting OFFSET_BEGINNING...")
             #
             #
             # TODO
@@ -107,16 +112,16 @@ class KafkaConsumer:
         #
         
         
-        message=self.consumer.poll(3.0)
-        if message is None:
-            print('No message is received')
+        message=self.consumer.poll(1.0)
+        if (message is None) or (message.value() is None):
+            logger.info('No message is received')
             return 0
         elif message.error() is not None:
-            print(f"Error while receiving message\n{message.error()}")
+            logger.info(f"Error while receiving message\n{message.error()}")
             return 0
         else:
             self.message_handler(message)
-            print("topic:", message.topic())
+            logger.info(f"Topic:, {message.topic()} \nValue: {message.value()} \nkey: {message.key()}")
             return 1
                 
         

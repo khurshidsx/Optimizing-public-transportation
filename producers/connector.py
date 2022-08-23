@@ -32,7 +32,7 @@ def configure_connector():
     # using incrementing mode, with `stop_id` as the incrementing column name.
     # Make sure to think about what an appropriate topic prefix would be, and how frequently Kafka
     # Connect should run this connector (hint: not very often!)
-    logger.info("connector code not completed skipping connector creation")
+    logger.info("connecting process is started")
     #resp = requests.post(
     #    KAFKA_CONNECT_URL,
     #    headers={"Content-Type": "application/json"},
@@ -57,7 +57,6 @@ def configure_connector():
     #            "mode": "",
     #            # TODO
     #            "incrementing.column.name": "",
-					 
     #            "topic.prefix": "org.chicago.cta.",
     #            # TODO
     #            "poll.interval.ms": "",
@@ -98,6 +97,6 @@ def configure_connector():
         print(f"Failed while creating connector :{json.dumps(resp.json(), indent=2)}")
         exit(1)
     logging.info("Connector is successfully created")    
-    return
+    #return
 if __name__ == "__main__":
     configure_connector()

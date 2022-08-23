@@ -40,6 +40,7 @@ class Producer:
         self.broker_properties = {
             "BROKER_URL":"localhost:9092",
 			"SCHEMA_REGISTRY_URL":"http://localhost:8081",
+           
         }
 
         # If the topic does not already exist, try to create it
@@ -100,13 +101,11 @@ class Producer:
         #
         # TODO: Write cleanup code for the Producer here
         #
-		 
+
         if self.producer is not None:
             self.producer.flush()
-            #self.producer.close()
-        #
-        
-        #logger.info("producer close incomplete - skipping")
+            self.producer.close()
+            logger.info("producer is closed")
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""

@@ -5,12 +5,8 @@ import logging
 from pathlib import Path
 import random
 import urllib.parse
-
-
 import requests
-
 from models.producer import Producer
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -126,10 +122,13 @@ class Weather(Producer):
         resp=requests.post(f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
                           headers={"Content-Type":"application/vnd.kafka.avro.v2+json"},
                           data=json.dumps(data_json),)
-        print("response:\n", json.dumps(resp.json()))
+        print("Weather response:\n", json.dumps(resp.json()))
 
         
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except:
+            print(f"Failed to generate a weather event: {json.dumps(resp.json(), indent=2)}")
      
         
         

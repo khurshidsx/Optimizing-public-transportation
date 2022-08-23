@@ -28,6 +28,7 @@ class Line:
         if value["line"] != self.color:
             return
         self.stations[value["station_id"]] = Station.from_message(value)
+        
 
     def _handle_arrival(self, message):
         """Updates train locations"""
@@ -60,16 +61,17 @@ class Line:
         topic_name=message.topic()
         logger.info(f"Line message: {message.value()}")
         
-        if message.topic() == 'org.chicago.cta.stations.table.v1':  # Set the conditional correctly to the stations Faust Table
+        if message.topic() == "org.chicago.cta.stations.table.v1":  
             try:
                 value = json.loads(message.value())
                 self._handle_station(value)
+                logger.info(f"Current station {value}")
             except Exception as e:
                 logger.fatal("bad station? %s, %s", value, e)
-        elif "station.arrivals" in message.topic():# Set the conditional to the arrival topic
-            print("Arrival message:\n", message.value())
+        elif "arrivals" in message.topic():
+            logger.info("*** Arrival message:\n", message.value())
             self._handle_arrival(message)
-        elif (message.topic()=='TURNSTILE_SUMMARY'): 
+        elif (message.topic()=="TURNSTILE_SUMMARY"): 
             # Set the conditional to the KSQL Turnstile Summary Topic
             json_data = json.loads(message.value())
             station_id = json_data.get("STATION_ID")

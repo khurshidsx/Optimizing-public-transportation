@@ -37,7 +37,7 @@ class Station(Producer):
         #
         #topic_name = "org.chicago.cta.station.arrivals" # TODO: Come up with a better topic name
         super().__init__(
-            topic_name="org.chicago.cta.station.arrivals",
+            topic_name=f"org.chicago.cta.station.{station_name}.arrivals",
             key_schema=Station.key_schema,
             # TODO: value_schema=self.value_schema, # TODO: Uncomment once schema is defined
             # TODO: num_partitions=???,
@@ -75,21 +75,29 @@ class Station(Producer):
         #        #
         #    },
         #)
+ 
+        if prev_station_id is None:
+            prev_station_id = -1
+        if prev_direction is None:
+            prev_direction = "none"
+            
         self.producer.produce(
         topic=self.topic_name,
-    key_schema=Station.key_schema,
-    value_schema=Station.value_schema,
+    key_schema=self.key_schema,
+    value_schema=self.value_schema,
         key={'timestamp':self.time_millis()},
             value={
                 "station_id":self.station_id,
                 "train_id":train.train_id,
                 "direction":direction,
-                "line":self.color.name.upper(),
+                "line":self.color.name,#.upper(),
                 "train_status":train.status.name,
                 "prev_station_id":prev_station_id,
                 "prev_direction":prev_direction,
             }
+            
         )
+        logger.info(f"Arrival info: Station id:{self.station_id}, prev_station_id :{prev_station_id}")
 #Issue :https://knowledge.udacity.com/questions/597649
     def __str__(self):
         return "Station | {:^5} | {:<30} | Direction A: | {:^5} | departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | ".format(
